@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>인스타 9컷 분할기</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link rel="stylesheet" href="style.css" />
   </head>
@@ -15,9 +20,7 @@
         <div id="step-1-upload" class="toss-card active">
           <div class="card-content">
             <h1>사진 한 장으로<br />프로필을 꽉 채워보세요</h1>
-            <p>
-              설치도, 로그인도 필요 없어요.<br />웹에서 바로 9컷으로 나눠드려요.
-            </p>
+            <p>설치도, 로그인도 필요 없어요.<br />웹에서 바로 나눠드려요.</p>
           </div>
           <div class="card-footer-simple">
             <button id="uploadButton" class="btn-primary">+ 사진 올리기</button>
@@ -30,66 +33,80 @@
           />
         </div>
 
+        <div id="step-2-crop" class="toss-card">
+          <div class="card-content">
+            <h1>
+              가장 잘 어울리는<br /><strong id="cropHeadingText"
+                >"3x3 정방형"</strong
+              >으로 나눌까요?
+            </h1>
+            <p>영역을 조절하거나, 다른 방법으로 나눌 수 있어요.</p>
+
+            <div class="mode-toggle-group">
+              <button id="fitFillToggleButton" class="btn-mode active">
+                ✂️ 자르기
+              </button>
+              <div
+                id="colorPickerGroup"
+                class="color-picker"
+                style="display: none"
+              >
+                <button
+                  class="color-dot"
+                  data-color="#FFFFFF"
+                  style="background-color: #ffffff; border: 1px solid #eee"
+                ></button>
+                <button
+                  class="color-dot active"
+                  data-color="#000000"
+                  style="background-color: #000000"
+                ></button>
+                <button
+                  class="color-dot"
+                  data-color="auto"
+                  style="
+                    background: conic-gradient(
+                      red,
+                      yellow,
+                      lime,
+                      aqua,
+                      blue,
+                      magenta,
+                      red
+                    );
+                  "
+                >
+                  🎨
+                </button>
+              </div>
+            </div>
+
+            <div id="cropperContainer">
+              <img id="cropperImage" src="" alt="크롭할 이미지" />
+            </div>
+            <div id="fitPreviewContainer" style="display: none"></div>
+          </div>
+          <div class="card-footer button-group">
+            <button id="changeGridButton" class="btn-secondary">
+              🔄 다른 방법
+            </button>
+            <button id="cropAndSplitButton" class="btn-primary">
+              💙 이대로 나누기
+            </button>
+          </div>
+        </div>
+
         <div id="step-2-options" class="toss-card">
           <div class="card-content">
-            <h1>어떻게 나눌까요?</h1>
-            <p>인스타그램은 3열이 기준이에요.</p>
+            <h1>다른 방법으로 나눌까요?</h1>
+            <p>사진 비율에 맞는 추천 옵션입니다.</p>
             <img id="sourcePreview" src="" alt="선택한 사진" />
-            <div class="option-group">
-              <button class="option-card" data-grid="3x1">
-                <div class="grid-preview three-by-one">
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                </div>
-                <strong>한 줄 (3장)</strong>
-              </button>
-              <button class="option-card" data-grid="3x2">
-                <div class="grid-preview three-by-two">
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                </div>
-                <strong>두 줄 (6장)</strong>
-              </button>
-              <button class="option-card active" data-grid="3x3">
-                <div class="grid-preview three-by-three">
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                </div>
-                <strong>세 줄 (9장)</strong>
-              </button>
-              <button class="option-card" data-grid="3x4">
-                <div class="grid-preview three-by-four">
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                  <div class="grid-cell"></div>
-                </div>
-                <strong>네 줄 (12장)</strong>
-              </button>
-            </div>
+            <div class="option-group" id="optionGroup"></div>
           </div>
           <div class="card-footer">
-            <button id="splitButton" class="btn-primary">나누기</button>
+            <button id="backToCropButton" class="btn-primary">
+              ↩️ 추천으로 돌아가기
+            </button>
           </div>
         </div>
 

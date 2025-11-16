@@ -7,7 +7,8 @@
 
 html,
 body {
-  height: 100%; /* 화면 전체 높이 */
+  height: 100vh; /* v7.0: 토스 트릭을 위한 CSS 변수 사용 준비 */
+  height: calc(var(--app-height, 1vh) * 100);
   overflow: hidden; /* 브라우저 스크롤 방지 */
   background-color: #f2f4f6; /* 토스 배경 회색 */
   font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
@@ -86,6 +87,9 @@ h1 {
   margin-bottom: 12px;
   line-height: 1.4;
 }
+h1 > strong {
+  color: #0070ff;
+}
 p {
   font-size: 16px;
   color: #6b7684;
@@ -107,6 +111,10 @@ p {
 .btn-primary:hover {
   background-color: #0059cc;
 }
+.btn-primary:disabled {
+  background-color: #cdd2d8;
+  cursor: not-allowed;
+}
 
 .btn-secondary {
   width: 100%;
@@ -121,8 +129,13 @@ p {
 .btn-secondary:hover {
   background-color: #e5e8eb;
 }
+.btn-secondary:disabled {
+  background-color: #f2f4f6;
+  color: #cdd2d8;
+  cursor: not-allowed;
+}
 
-/* --- 단계 2: 원본 미리보기 --- */
+/* --- 단계 2: 원본 미리보기 (옵션 선택) --- */
 #sourcePreview {
   width: 60px;
   height: 60px;
@@ -132,7 +145,7 @@ p {
   border: 1px solid #f2f4f6;
 }
 
-/* --- 시각적 옵션 카드 --- */
+/* --- 시각적 옵션 카드 (단계 2) --- */
 .option-group {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -175,27 +188,114 @@ p {
 .option-card.active .grid-cell {
   background-color: #0070ff;
 }
-.three-by-one {
+
+/* 옵션별 그리드 시각화 */
+.grid-preview[data-grid-vis="3x1"] {
   grid-template-columns: 1fr 1fr 1fr;
 }
-.three-by-two {
+.grid-preview[data-grid-vis="3x2"] {
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr;
 }
-.three-by-three {
+.grid-preview[data-grid-vis="3x3"] {
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr;
 }
-.three-by-four {
+.grid-preview[data-grid-vis="3x4"] {
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr 1fr;
+}
+
+/* 4:5 파노라마 옵션 비주얼 */
+.grid-preview.pano .grid-cell {
+  background-color: #dde0e3;
+  width: 100%;
+  aspect-ratio: 4 / 5; /* 4:5 비율 */
+  border-radius: 1px;
+}
+
+/* (*** 버그 1, 2 수정 ***) 
+   아래 2개의 잘못된 규칙을 삭제하여 
+   .grid-preview의 height: 48px가 유지되도록 함 */
+/* .grid-preview[data-grid-vis="3x2-pano"] { height: auto; grid-template-rows: 1fr 1fr; } */
+/* .grid-preview[data-grid-vis="3x3-pano"] { height: auto; grid-template-rows: 1fr 1fr 1fr; } */
+
+/* (수정) 파노라마 그리드 규칙을 올바르게 수정 */
+.grid-preview[data-grid-vis="3x2-pano"] {
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+.grid-preview[data-grid-vis="3x3-pano"] {
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+}
+
+.option-card.active .grid-preview.pano .grid-cell {
+  background-color: #0070ff;
+}
+
+/* --- (신규) 단계 2.5: 크롭 단계 --- */
+.mode-toggle-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.btn-mode {
+  background-color: #f2f4f6;
+  color: #4e5968;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 10px;
+}
+.btn-mode.active {
+  background-color: #0070ff;
+  color: #ffffff;
+}
+
+.color-picker {
+  display: flex;
+  gap: 8px;
+}
+.color-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px #e5e8eb;
+  font-size: 18px;
+}
+.color-dot.active {
+  box-shadow: 0 0 0 3px #0070ff;
+}
+
+#cropperContainer,
+#fitPreviewContainer {
+  width: 100%;
+  height: 40vh; /* 크롭 영역의 적절한 높이 */
+  background-color: #f2f4f6;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+/* cropper.js가 생성할 이미지 */
+#cropperContainer img {
+  display: block;
+  max-width: 100%; /* 이게 중요! */
+}
+/* (신규) Fit 모드 미리보기 */
+#fitPreviewContainer {
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 /* --- 단계 3: 결과 그리드 --- */
 #gridResultContainer {
   display: grid;
   gap: 5px;
-  /* v7.0: max-height, overflow 제거. 부모(.card-content)가 스크롤함 */
   border: 1px solid #f2f4f6;
   border-radius: 12px;
   padding: 5px;
@@ -219,7 +319,6 @@ p {
 .card-footer {
   padding: 12px 24px 24px 24px;
   background-color: #fff;
-  /* v7.0: margin-top: auto 제거. flex-direction: column의 자연스러운 흐름 */
   border-top: 1px solid #f2f4f6;
 }
 .card-footer.button-group {
