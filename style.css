@@ -243,7 +243,7 @@ p > strong {
   max-width: 100%; /* 이게 중요! */
 }
 
-/* (v5.1 수정) 동적 생성되는 가이드 스타일 */
+/* === ▼▼▼ [수정됨] v_blog_fix: 가이드라인 CSS 전면 수정 ▼▼▼ === */
 /* .cropper-crop-box는 cropper.js가 생성하는 클래스 */
 .cropper-crop-box .seam-guides-dynamic {
   position: absolute;
@@ -255,35 +255,51 @@ p > strong {
 }
 .seam-line-dynamic {
   position: absolute;
+  /* 기본 스타일은 투명하게. 개별 스타일이 덮어씀 */
+  background-color: transparent;
+}
+
+/* 1. 프로필 '안전 영역' (맨 바깥쪽, 붉은 영역) */
+.seam-line-dynamic.outer-safe-zone {
+  top: 0;
+  bottom: 0;
   background-color: rgba(255, 0, 0, 0.4);
   border-left: 1px dashed rgba(255, 255, 255, 0.7);
   border-right: 1px dashed rgba(255, 255, 255, 0.7);
+  /* 33.5px / 3240px (1080*3) = 1.034% */
+  width: 1.034%;
 }
-/* 세로 점선 (Vertical Seams) */
-.seam-line-dynamic.vertical {
+.seam-line-dynamic.outer-left {
+  left: 0;
+}
+.seam-line-dynamic.outer-right {
+  right: 0;
+}
+
+/* 2. '내부 분할선' (가로/세로, 흰색 점선) */
+.seam-line-dynamic.internal-split-line {
+  background-color: rgba(255, 255, 255, 0.7); /* 흰색 점선 */
+}
+.seam-line-dynamic.vertical-split {
   top: 0;
   bottom: 0;
-  /* Seam Width: 67px / 3240px = 2.0679% */
-  width: 2.0679%;
+  width: 1px; /* 얇은 실선 */
+  margin-left: -0.5px; /* 중앙 정렬 */
 }
 .seam-line-dynamic.vertical-1 {
-  /* left = Center - (Width / 2) = 33.333% - (2.0679% / 2) = 32.3% */
-  left: 32.3%;
+  left: 33.333%;
 }
 .seam-line-dynamic.vertical-2 {
-  /* left = Center - (Width / 2) = 66.666% - (2.0679% / 2) = 65.63% */
-  left: 65.63%;
+  left: 66.666%;
 }
-/* (v5.2) 가로 점선 (Horizontal Seams) - 인스타는 가로 Seam이 없음!
-   대신, 사용자가 요청한 '줄 수에 맞는 선'을 보여줌
-*/
+
+/* 3. '가로 분할선' (v5.2) - 이제 internal-split-line을 따름 */
 .seam-line-dynamic.horizontal {
   left: 0;
   right: 0;
   height: 1px; /* 얇은 실선 */
-  border: none;
-  background-color: rgba(255, 255, 255, 0.7); /* 흰색 점선 */
 }
+/* === ▲▲▲ [수정됨] v_blog_fix: 가이드라인 CSS 전면 수정 ▲▲▲ === */
 
 /* --- 단계 3: 결과 그리드 --- */
 #gridResultContainer {

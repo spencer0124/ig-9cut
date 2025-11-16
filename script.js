@@ -3,10 +3,10 @@
 document.addEventListener("DOMContentLoaded", () => {
   // --- (v5.1) "4:5 파노라마" 전용 옵션 정의 (이름 단순화) ---
   const ALL_GRID_OPTIONS = [
-    { id: "3x1-pano", text: "1줄 (3장)", cols: 3, rows: 1, targetRatio: 2.4 },
-    { id: "3x2-pano", text: "2줄 (6장)", cols: 3, rows: 2, targetRatio: 1.2 },
-    { id: "3x3-pano", text: "3줄 (9장)", cols: 3, rows: 3, targetRatio: 0.8 },
-    { id: "3x4-pano", text: "4줄 (12장)", cols: 3, rows: 4, targetRatio: 0.6 },
+    { id: "3x1-pano", text: "1줄 (3장)", cols: 3, rows: 1, targetRatio: 2.4 }, // (1080*3) / 1350 = 2.4
+    { id: "3x2-pano", text: "2줄 (6장)", cols: 3, rows: 2, targetRatio: 1.2 }, // (1080*3) / (1350*2) = 1.2
+    { id: "3x3-pano", text: "3줄 (9장)", cols: 3, rows: 3, targetRatio: 0.8 }, // (1080*3) / (1350*3) = 0.8
+    { id: "3x4-pano", text: "4줄 (12장)", cols: 3, rows: 4, targetRatio: 0.6 }, // (1080*3) / (1350*4) = 0.6
   ];
 
   // (v4.0) 사진 손실이 이 값(%) 이상이면 '여백 채우기'를 제안
@@ -327,19 +327,26 @@ document.addEventListener("DOMContentLoaded", () => {
               const guides = document.createElement("div");
               guides.className = "seam-guides-dynamic";
 
-              // 3. (v5.0) 붉은색 '세로' Seam 가이드 2개 추가
+              // === ▼▼▼ [수정됨] v_blog_fix: 블로그 지식 기반 가이드라인 수정 ▼▼▼ ===
+              // 3. (v_blog_fix) 블로그 지식 기반 가이드라인 수정
               guides.innerHTML = `
-                <div class="seam-line-dynamic vertical vertical-1"></div>
-                <div class="seam-line-dynamic vertical vertical-2"></div>
+                <div class="seam-line-dynamic outer-safe-zone outer-left"></div>
+                <div class="seam-line-dynamic outer-safe-zone outer-right"></div>
+
+                <div class="seam-line-dynamic internal-split-line vertical-split vertical-1"></div>
+                <div class="seam-line-dynamic internal-split-line vertical-split vertical-2"></div>
               `;
 
-              // 4. (v5.2) '줄 수'에 맞는 '가로' 분할선 추가
+              // 4. (v5.2 / v_blog_fix) '줄 수'에 맞는 '가로' 분할선 추가 (흰색)
               for (let i = 1; i < gridOption.rows; i++) {
                 const hLine = document.createElement("div");
-                hLine.className = "seam-line-dynamic horizontal";
+                // (v_blog_fix) 'internal-split-line' 클래스 추가
+                hLine.className =
+                  "seam-line-dynamic internal-split-line horizontal";
                 hLine.style.top = `${(i / gridOption.rows) * 100}%`;
                 guides.appendChild(hLine);
               }
+              // === ▲▲▲ [수정됨] v_blog_fix: 블로그 지식 기반 가이드라인 수정 ▲▲▲ ===
 
               cropBox.appendChild(guides);
             }
