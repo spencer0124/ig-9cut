@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>인스타 9컷 분할기</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="step-1-upload" class="toss-card active">
+      <div class="card-content">
+        <h1>사진 한 장으로<br />프로필을 꽉 채워보세요</h1>
+        <p>
+          설치도, 로그인도 필요 없어요.<br />웹에서 바로 9컷으로 나눠드려요.
+        </p>
+        <button id="uploadButton" class="btn-primary">+ 사진 올리기</button>
+        <input
+          type="file"
+          id="imageLoader"
+          accept="image/*"
+          style="display: none"
+        />
+      </div>
+    </div>
+
+    <div id="step-2-options" class="toss-card">
+      <div class="card-content">
+        <h1>어떻게 나눌까요?</h1>
+        <p>인스타그램은 3열이 기준이에요.</p>
+
+        <img id="sourcePreview" src="" alt="선택한 사진" />
+
+        <div class="option-group">
+          <button class="option-card" data-grid="3x1">
+            <div class="grid-preview three-by-one">
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+            </div>
+            <strong>한 줄 (3장)</strong>
+          </button>
+          <button class="option-card" data-grid="3x2">
+            <div class="grid-preview three-by-two">
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+            </div>
+            <strong>두 줄 (6장)</strong>
+          </button>
+          <button class="option-card active" data-grid="3x3">
+            <div class="grid-preview three-by-three">
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+            </div>
+            <strong>세 줄 (9장)</strong>
+          </button>
+          <button class="option-card" data-grid="3x4">
+            <div class="grid-preview three-by-four">
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+              <div class="grid-cell"></div>
+            </div>
+            <strong>네 줄 (12장)</strong>
+          </button>
+        </div>
+      </div>
+      <div class="card-footer">
+        <button id="splitButton" class="btn-primary">나누기</button>
+      </div>
+    </div>
+
+    <div id="step-3-result" class="toss-card">
+      <div class="card-content">
+        <h1>완료!</h1>
+        <p>이미지를 탭하면 하나씩 저장돼요.</p>
+
+        <div id="gridResultContainer"></div>
+      </div>
+      <div class="card-footer button-group">
+        <button id="zipDownloadButton" class="btn-secondary">
+          .zip으로 모두 받기
+        </button>
+        <button id="restartButton" class="btn-primary">새로 하기</button>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

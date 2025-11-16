@@ -1,0 +1,197 @@
+/* --- 토스 기본 설정 --- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+    "Pretendard", "Segoe UI", Roboto, sans-serif;
+  background-color: #f2f4f6; /* 토스 배경 회색 */
+  color: #191919;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* 상단 정렬 */
+  min-height: 100vh;
+  padding: 20px;
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  background-color: transparent;
+}
+
+/* --- 토스 카드 레이아웃 --- */
+.toss-card {
+  background-color: #ffffff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 420px; /* 모바일 최적화 폭 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  display: none; /* JS가 .active로 제어 */
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.toss-card.active {
+  display: flex;
+}
+
+.card-content {
+  padding: 32px 24px;
+  text-align: left; /* 토스는 좌측 정렬 */
+}
+
+/* --- v4.0: 토스 멘트 (카피) --- */
+h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #191919; /* 토스 블랙 */
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+p {
+  font-size: 16px;
+  color: #6b7684; /* 토스 그레이 */
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+/* --- 토스 CTA 버튼 --- */
+.btn-primary {
+  width: 100%;
+  height: 52px;
+  background-color: #0070ff; /* 토스 블루 */
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 600;
+  border-radius: 14px;
+  transition: background-color 0.2s;
+}
+.btn-primary:hover {
+  background-color: #0059cc;
+}
+
+.btn-secondary {
+  width: 100%;
+  height: 52px;
+  background-color: #f2f4f6; /* 토스 배경 회색 */
+  color: #4e5968; /* 토스 다크 그레이 */
+  font-size: 17px;
+  font-weight: 600;
+  border-radius: 14px;
+  transition: background-color 0.2s;
+}
+.btn-secondary:hover {
+  background-color: #e5e8eb;
+}
+
+/* --- 단계 2: 원본 미리보기 --- */
+#sourcePreview {
+  width: 60px; /* 더 작게 */
+  height: 60px;
+  border-radius: 10px;
+  object-fit: cover;
+  margin-bottom: 24px;
+  border: 1px solid #f2f4f6;
+}
+
+/* --- v4.0: 시각적 옵션 카드 --- */
+.option-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.option-card {
+  width: 100%;
+  padding: 16px;
+  border: 2px solid #e5e8eb; /* 비활성 테두리 */
+  border-radius: 14px;
+  text-align: center; /* 가운데 정렬 */
+  transition: border-color 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column; /* 아이콘과 텍스트 수직 정렬 */
+  align-items: center;
+  gap: 12px; /* 아이콘과 텍스트 간격 */
+}
+.option-card:hover {
+  border-color: #0070ff;
+}
+.option-card.active {
+  border-color: #0070ff; /* 토스 블루 */
+  box-shadow: 0 0 0 2px #0070ff;
+}
+.option-card strong {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333d4b;
+}
+
+/* v4.0: 그리드 미리보기 '표' 아이콘 */
+.grid-preview {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  gap: 3px;
+}
+.grid-cell {
+  background-color: #dde0e3; /* 비활성 회색 */
+  border-radius: 2px;
+}
+.option-card.active .grid-cell {
+  background-color: #0070ff; /* 활성 파란색 */
+}
+
+/* 그리드 '표' 아이콘 레이아웃 */
+.three-by-one {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+.three-by-two {
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+.three-by-three {
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+}
+.three-by-four {
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr 1fr;
+}
+
+/* --- 단계 3: 결과 그리드 --- */
+#gridResultContainer {
+  display: grid;
+  gap: 5px;
+  margin-bottom: 32px;
+}
+#gridResultContainer a {
+  display: block;
+  line-height: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.1s ease;
+}
+#gridResultContainer a:hover {
+  transform: scale(1.03);
+}
+#gridResultContainer img {
+  width: 100%;
+  height: auto;
+}
+
+/* --- 하단 고정 버튼 --- */
+.card-footer {
+  padding: 12px 24px 24px 24px;
+  background-color: #fff;
+  border-top: 1px solid #f2f4f6;
+}
+.card-footer.button-group {
+  display: flex;
+  gap: 10px;
+}
