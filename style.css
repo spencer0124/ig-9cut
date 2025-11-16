@@ -59,17 +59,13 @@ button {
   width: 100%;
   height: 100%; /* .content-area를 꽉 채움 */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-
-  /* 카드 자체는 숨김/표시만 */
   display: none;
-
-  /* v7.0: 카드를 '컨텐츠(스크롤)'와 '푸터(고정)'로 분리 */
   flex-direction: column;
   overflow: hidden;
 }
 .toss-card.active {
   display: flex;
-} /* flex가 되면서 column으로 정렬 */
+}
 
 /* v7.0: 스크롤되는 컨텐츠 영역 */
 .card-content {
@@ -95,6 +91,10 @@ p {
   color: #6b7684;
   margin-bottom: 32px;
   line-height: 1.5;
+}
+p > strong {
+  color: #4e5968;
+  font-weight: 600;
 }
 
 /* --- 토스 CTA 버튼 --- */
@@ -189,38 +189,17 @@ p {
   background-color: #0070ff;
 }
 
-/* 옵션별 그리드 시각화 */
-.grid-preview[data-grid-vis="3x1"] {
-  grid-template-columns: 1fr 1fr 1fr;
-}
-.grid-preview[data-grid-vis="3x2"] {
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-}
-.grid-preview[data-grid-vis="3x3"] {
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 1fr 1fr 1fr;
-}
-.grid-preview[data-grid-vis="3x4"] {
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 1fr 1fr 1fr 1fr;
-}
-
-/* 4:5 파노라마 옵션 비주얼 */
-.grid-preview.pano .grid-cell {
+/* (v5.0) 4:5 파노라마 옵션 비주얼 (1:1 삭제) */
+.grid-preview .grid-cell {
   background-color: #dde0e3;
   width: 100%;
-  aspect-ratio: 4 / 5; /* 4:5 비율 */
+  /* (v5.1 수정) 미리보기 깨짐의 원인. aspect-ratio 삭제 */
+  /* aspect-ratio: 4 / 5; */
   border-radius: 1px;
 }
-
-/* (*** 버그 1, 2 수정 ***) 
-   아래 2개의 잘못된 규칙을 삭제하여 
-   .grid-preview의 height: 48px가 유지되도록 함 */
-/* .grid-preview[data-grid-vis="3x2-pano"] { height: auto; grid-template-rows: 1fr 1fr; } */
-/* .grid-preview[data-grid-vis="3x3-pano"] { height: auto; grid-template-rows: 1fr 1fr 1fr; } */
-
-/* (수정) 파노라마 그리드 규칙을 올바르게 수정 */
+.grid-preview[data-grid-vis="3x1-pano"] {
+  grid-template-columns: 1fr 1fr 1fr;
+}
 .grid-preview[data-grid-vis="3x2-pano"] {
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr;
@@ -229,67 +208,71 @@ p {
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr;
 }
+.grid-preview[data-grid-vis="3x4-pano"] {
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr 1fr;
+}
 
-.option-card.active .grid-preview.pano .grid-cell {
+.option-card.active .grid-preview .grid-cell {
   background-color: #0070ff;
 }
 
-/* --- (신규) 단계 2.5: 크롭 단계 --- */
-.mode-toggle-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-.btn-mode {
-  background-color: #f2f4f6;
-  color: #4e5968;
-  font-size: 15px;
-  font-weight: 600;
-  padding: 8px 14px;
-  border-radius: 10px;
-}
-.btn-mode.active {
-  background-color: #0070ff;
-  color: #ffffff;
-}
-
-.color-picker {
-  display: flex;
-  gap: 8px;
-}
-.color-dot {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid #fff;
-  box-shadow: 0 0 0 2px #e5e8eb;
-  font-size: 18px;
-}
-.color-dot.active {
-  box-shadow: 0 0 0 3px #0070ff;
-}
-
-#cropperContainer,
-#fitPreviewContainer {
+/* --- (v5.0) 단계 2.A/2.B: 크롭 & 여백 미리보기 --- */
+#cropperContainer {
+  position: relative; /* (v5.0) 안전 영역 가이드를 위한 기준 */
   width: 100%;
-  height: 40vh; /* 크롭 영역의 적절한 높이 */
+  height: 40vh;
   background-color: #f2f4f6;
   border-radius: 12px;
   overflow: hidden;
   margin-bottom: 24px;
 }
-/* cropper.js가 생성할 이미지 */
+#fitPreviewContainer {
+  width: 100%;
+  height: 40vh;
+  background-color: #000000; /* 여백은 검은색 고정 */
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
 #cropperContainer img {
   display: block;
   max-width: 100%; /* 이게 중요! */
 }
-/* (신규) Fit 모드 미리보기 */
-#fitPreviewContainer {
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
+
+/* (v5.1 수정) 동적 생성되는 가이드 스타일 */
+/* .cropper-crop-box는 cropper.js가 생성하는 클래스 */
+.cropper-crop-box .seam-guides-dynamic {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* 크롭퍼 조작을 방해하지 않음 */
+}
+.seam-line-dynamic {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  /* Seam 1 Center: 1080px / 3240px = 33.33%
+    Seam 2 Center: 2160px / 3240px = 66.66%
+    Seam Width: 67px / 3240px = 2.0679%
+  */
+  width: 2.0679%;
+  background-color: rgba(255, 0, 0, 0.4);
+  border-left: 1px dashed rgba(255, 255, 255, 0.7);
+  border-right: 1px dashed rgba(255, 255, 255, 0.7);
+}
+.seam-line-dynamic:nth-child(1) {
+  /* left = Center - (Width / 2) = 33.333% - (2.0679% / 2) = 32.3% */
+  left: 32.3%;
+}
+.seam-line-dynamic:nth-child(2) {
+  /* left = Center - (Width / 2) = 66.666% - (2.0679% / 2) = 65.63% */
+  left: 65.63%;
 }
 
 /* --- 단계 3: 결과 그리드 --- */
@@ -301,6 +284,7 @@ p {
   padding: 5px;
 }
 #gridResultContainer a {
+  position: relative; /* (v5.1) 번호 표시를 위한 기준 */
   display: block;
   line-height: 0;
   border-radius: 8px;
@@ -313,6 +297,23 @@ p {
 #gridResultContainer img {
   width: 100%;
   height: auto;
+}
+/* (v5.1) 결과물에 번호 표시 */
+.grid-number-label {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
 }
 
 /* --- v7.0: 하단 고정 버튼 --- */

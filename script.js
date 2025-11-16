@@ -1,27 +1,20 @@
-/* === 리팩토링된 script.js (v3.3: 토글 오류 수정) === */
+/* === 리팩토링된 script.js (v5.1: "4:5 썸네일" 전용, 버그 수정) === */
 
 document.addEventListener("DOMContentLoaded", () => {
-  // --- 모든 분할 옵션 정의 ---
+  // --- (v5.1) "4:5 파노라마" 전용 옵션 정의 (이름 단순화) ---
   const ALL_GRID_OPTIONS = [
-    { id: "3x1", text: "3x1 정방형", cols: 3, rows: 1, targetRatio: 3 / 1 },
-    { id: "3x2", text: "3x2 정방형", cols: 3, rows: 2, targetRatio: 3 / 2 },
-    { id: "3x3", text: "3x3 정방형", cols: 3, rows: 3, targetRatio: 3 / 3 },
-    { id: "3x4", text: "3x4 정방형", cols: 3, rows: 4, targetRatio: 3 / 4 },
-    {
-      id: "3x2-pano",
-      text: "3x2 (4:5 파노라마)",
-      cols: 3,
-      rows: 2,
-      targetRatio: 1.2,
-    },
-    {
-      id: "3x3-pano",
-      text: "3x3 (4:5 파노라마)",
-      cols: 3,
-      rows: 3,
-      targetRatio: 0.8,
-    },
+    // 3x1 (4:5 Pano): 전체 비율 (3*4) : (1*5) = 12:5 = 2.4
+    { id: "3x1-pano", text: "1줄 (3장)", cols: 3, rows: 1, targetRatio: 2.4 },
+    // 3x2 (4:5 Pano): 전체 비율 (3*4) : (2*5) = 12:10 = 1.2
+    { id: "3x2-pano", text: "2줄 (6장)", cols: 3, rows: 2, targetRatio: 1.2 },
+    // 3x3 (4:5 Pano): 전체 비율 (3*4) : (3*5) = 12:15 = 0.8
+    { id: "3x3-pano", text: "3줄 (9장)", cols: 3, rows: 3, targetRatio: 0.8 },
+    // 3x4 (4:5 Pano): 전체 비율 (3*4) : (4*5) = 12:20 = 0.6
+    { id: "3x4-pano", text: "4줄 (12장)", cols: 3, rows: 4, targetRatio: 0.6 },
   ];
+
+  // (v4.0) 사진 손실이 이 값(%) 이상이면 '여백 채우기'를 제안
+  const CROP_LOSS_THRESHOLD_RATIO = 0.4; // 40% 이상 잘려나갈 때
 
   const App = {
     // 1. 앱의 상태를 관리하는 객체
@@ -30,8 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
       generatedPieces: [],
       cropperInstance: null,
       selectedGridOption: null,
-      isCropMode: true,
-      padColor: "#000000",
+      padColor: "#000000", // 여백 색상 (검은색 고정)
     },
 
     // 2. DOM 요소를 저장하는 객체
@@ -40,21 +32,27 @@ document.addEventListener("DOMContentLoaded", () => {
       step2Crop: null,
       step2Options: null,
       step3Result: null,
+      step2SmartSwitch: null,
       uploadButton: null,
       imageLoader: null,
       sourcePreview: null,
       gridResultContainer: null,
       zipDownloadButton: null,
       restartButton: null,
+      // 여백 제안
+      padHeadingText: null,
+      padOptionText: null,
+      fitPreviewContainer: null,
+      forceCropButton: null,
+      splitWithPadButton: null,
+      // 크롭 조정
       cropperImage: null,
       cropHeadingText: null,
-      fitFillToggleButton: null,
-      colorPickerGroup: null,
-      colorDots: null,
       cropperContainer: null,
-      fitPreviewContainer: null,
       cropAndSplitButton: null,
       changeGridButton: null,
+      // (v5.1) seamGuides 요소를 삭제함 (동적 생성)
+      // 옵션 변경
       optionGroup: null,
       backToCropButton: null,
     },
@@ -71,9 +69,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // 3-2. DOM 요소 찾기
     findDOMElements() {
       this.elements.step1Upload = document.getElementById("step-1-upload");
+      this.elements.step2SmartSwitch = document.getElementById(
+        "step-2-smart-switch"
+      );
       this.elements.step2Crop = document.getElementById("step-2-crop");
       this.elements.step2Options = document.getElementById("step-2-options");
       this.elements.step3Result = document.getElementById("step-3-result");
+
       this.elements.uploadButton = document.getElementById("uploadButton");
       this.elements.imageLoader = document.getElementById("imageLoader");
       this.elements.sourcePreview = document.getElementById("sourcePreview");
@@ -83,24 +85,30 @@ document.addEventListener("DOMContentLoaded", () => {
       this.elements.zipDownloadButton =
         document.getElementById("zipDownloadButton");
       this.elements.restartButton = document.getElementById("restartButton");
-      this.elements.cropperImage = document.getElementById("cropperImage");
-      this.elements.cropHeadingText =
-        document.getElementById("cropHeadingText");
-      this.elements.fitFillToggleButton = document.getElementById(
-        "fitFillToggleButton"
-      );
-      this.elements.colorPickerGroup =
-        document.getElementById("colorPickerGroup");
-      this.elements.colorDots = document.querySelectorAll(".color-dot");
-      this.elements.cropperContainer =
-        document.getElementById("cropperContainer");
+
+      // 여백 제안 (Step 2A)
+      this.elements.padHeadingText = document.getElementById("padHeadingText");
+      this.elements.padOptionText = document.getElementById("padOptionText");
       this.elements.fitPreviewContainer = document.getElementById(
         "fitPreviewContainer"
       );
+      this.elements.forceCropButton =
+        document.getElementById("forceCropButton");
+      this.elements.splitWithPadButton =
+        document.getElementById("splitWithPadButton");
+
+      // 크롭 조정 (Step 2B)
+      this.elements.cropperImage = document.getElementById("cropperImage");
+      this.elements.cropHeadingText =
+        document.getElementById("cropHeadingText");
+      this.elements.cropperContainer =
+        document.getElementById("cropperContainer");
       this.elements.cropAndSplitButton =
         document.getElementById("cropAndSplitButton");
       this.elements.changeGridButton =
         document.getElementById("changeGridButton");
+
+      // 옵션 변경 (Step 3)
       this.elements.optionGroup = document.getElementById("optionGroup");
       this.elements.backToCropButton =
         document.getElementById("backToCropButton");
@@ -116,6 +124,16 @@ document.addEventListener("DOMContentLoaded", () => {
         "change",
         this.handlers.handleImageChange
       );
+
+      this.elements.forceCropButton.addEventListener(
+        "click",
+        this.handlers.handleForceCrop
+      );
+      this.elements.splitWithPadButton.addEventListener(
+        "click",
+        this.handlers.handleSplitWithPad
+      );
+
       this.elements.cropAndSplitButton.addEventListener(
         "click",
         this.handlers.handleCropAndSplit
@@ -124,14 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "click",
         this.handlers.handleChangeGrid
       );
-      this.elements.fitFillToggleButton.addEventListener(
-        "click",
-        this.handlers.handleFitFillToggle
-      );
-      this.elements.colorPickerGroup.addEventListener(
-        "click",
-        this.handlers.handleColorSelect
-      );
+
       this.elements.optionGroup.addEventListener(
         "click",
         this.handlers.handleOptionSelect
@@ -140,6 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "click",
         this.handlers.handleBackToCrop
       );
+
       this.elements.zipDownloadButton.addEventListener(
         "click",
         this.logic.downloadAllAsZip
@@ -173,16 +185,82 @@ document.addEventListener("DOMContentLoaded", () => {
             const imageRatio =
               App.state.originalImage.width / App.state.originalImage.height;
             const bestOption = App.logic.getBestGridOption(imageRatio);
+            App.state.selectedGridOption = bestOption; // 추천 옵션을 상태에 저장
 
-            App.ui.goToStep(App.elements.step2Crop);
-            setTimeout(() => {
-              App.logic.setupCropper(bestOption);
-            }, 0);
+            // (v4.0) 비율 차이(손실률) 계산
+            const diff = Math.abs(imageRatio - bestOption.targetRatio);
+            const lossPercent =
+              diff / Math.max(imageRatio, bestOption.targetRatio);
+
+            if (lossPercent > CROP_LOSS_THRESHOLD_RATIO) {
+              // A. 손실이 크다 -> "여백 채우기" 제안
+              App.ui.setupSmartSwitch(bestOption);
+              App.ui.goToStep(App.elements.step2SmartSwitch);
+            } else {
+              // B. 손실이 적다 -> "크롭 조정" (90%의 흐름)
+              App.ui.goToStep(App.elements.step2Crop);
+              setTimeout(() => {
+                App.logic.setupCropper(bestOption);
+              }, 0);
+            }
           };
         };
         reader.readAsDataURL(file);
       },
 
+      // [아니요, 직접 자를래요]
+      handleForceCrop() {
+        App.ui.goToStep(App.elements.step2Crop);
+        setTimeout(() => {
+          App.logic.setupCropper(App.state.selectedGridOption);
+        }, 0);
+      },
+
+      // [네, 여백으로 나눌게요]
+      async handleSplitWithPad() {
+        App.ui.setLoading(App.elements.splitWithPadButton, "나누는 중...");
+        const canvasToSplit = App.logic.createPaddedCanvas();
+
+        const imageToSplit = new Image();
+        imageToSplit.src = canvasToSplit.toDataURL("image/png");
+        imageToSplit.onload = () => {
+          App.logic.splitImage(imageToSplit, App.state.selectedGridOption);
+          App.ui.setLoading(
+            App.elements.splitWithPadButton,
+            "💙 네, 여백으로 나눌게요",
+            false
+          );
+        };
+      },
+
+      // [이대로 나누기] (크롭 모드)
+      async handleCropAndSplit() {
+        App.ui.setLoading(App.elements.cropAndSplitButton, "나누는 중...");
+
+        if (!App.state.cropperInstance) {
+          console.error("Cropper가 초기화되지 않았습니다.");
+          App.ui.setLoading(
+            App.elements.cropAndSplitButton,
+            "오류 발생",
+            false
+          );
+          return;
+        }
+
+        const canvasToSplit = App.state.cropperInstance.getCroppedCanvas();
+        const imageToSplit = new Image();
+        imageToSplit.src = canvasToSplit.toDataURL("image/png");
+        imageToSplit.onload = () => {
+          App.logic.splitImage(imageToSplit, App.state.selectedGridOption);
+          App.ui.setLoading(
+            App.elements.cropAndSplitButton,
+            "💙 이대로 나누기",
+            false
+          );
+        };
+      },
+
+      // [다른 줄로 나누기]
       handleChangeGrid() {
         const imageRatio =
           App.state.originalImage.width / App.state.originalImage.height;
@@ -191,6 +269,7 @@ document.addEventListener("DOMContentLoaded", () => {
         App.ui.goToStep(App.elements.step2Options);
       },
 
+      // 옵션 선택
       handleOptionSelect(e) {
         const selectedCard = e.target.closest(".option-card");
         if (!selectedCard) return;
@@ -204,62 +283,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 0);
       },
 
+      // 추천으로 돌아가기
       handleBackToCrop() {
         App.ui.goToStep(App.elements.step2Crop);
       },
 
-      handleFitFillToggle() {
-        App.state.isCropMode = !App.state.isCropMode;
-        App.ui.updateFitFillToggle();
-      },
-
-      handleColorSelect(e) {
-        const selectedColorDot = e.target.closest(".color-dot");
-        if (!selectedColorDot) return;
-
-        App.elements.colorDots.forEach((dot) => dot.classList.remove("active"));
-        selectedColorDot.classList.add("active");
-
-        App.state.padColor =
-          selectedColorDot.dataset.color === "auto"
-            ? "#000000" // TODO: 'auto' 색상 추출 로직 (일단 검정)
-            : selectedColorDot.dataset.color;
-
-        App.ui.updateFitFillToggle(); // 미리보기 색상 업데이트
-      },
-
-      async handleCropAndSplit() {
-        App.ui.setLoading(App.elements.cropAndSplitButton, "나누는 중...");
-
-        let imageToSplit = new Image();
-        let canvasToSplit;
-
-        if (App.state.isCropMode) {
-          if (!App.state.cropperInstance) {
-            console.error("Cropper가 초기화되지 않았습니다.");
-            App.ui.setLoading(
-              App.elements.cropAndSplitButton,
-              "오류 발생",
-              false
-            );
-            return;
-          }
-          canvasToSplit = App.state.cropperInstance.getCroppedCanvas();
-        } else {
-          canvasToSplit = App.logic.createPaddedCanvas();
-        }
-
-        imageToSplit.src = canvasToSplit.toDataURL("image/png");
-        imageToSplit.onload = () => {
-          App.logic.splitImage(imageToSplit, App.state.selectedGridOption);
-          App.ui.setLoading(
-            App.elements.cropAndSplitButton,
-            "💙 이대로 나누기",
-            false
-          );
-        };
-      },
-
+      // 새로 하기
       handleRestart() {
         App.state.originalImage = null;
         App.state.generatedPieces = [];
@@ -278,8 +307,7 @@ document.addEventListener("DOMContentLoaded", () => {
     logic: {
       setupCropper(gridOption) {
         App.state.selectedGridOption = gridOption;
-        App.state.isCropMode = true; // '자르기' 모드로 리셋
-        App.ui.updateCropUI(); // UI 업데이트 (제목, 토글 등)
+        App.ui.updateCropUI(gridOption); // UI 업데이트 (제목)
 
         if (App.state.cropperInstance) {
           App.state.cropperInstance.destroy();
@@ -290,11 +318,21 @@ document.addEventListener("DOMContentLoaded", () => {
           viewMode: 1,
           autoCropArea: 1.0,
           ready() {
-            console.log("Cropper is ready.");
+            // (v5.1 수정) 붉은 점선 가이드를 크롭 박스 안에 '동적'으로 주입
+            const cropBox =
+              App.elements.cropperContainer.querySelector(".cropper-crop-box");
+            if (cropBox) {
+              const guides = document.createElement("div");
+              guides.className = "seam-guides-dynamic";
+              guides.innerHTML =
+                '<div class="seam-line-dynamic"></div><div class="seam-line-dynamic"></div>';
+              cropBox.appendChild(guides);
+            }
           },
         });
       },
 
+      // (v5.0) "4:5" 옵션 중에서만 최적의 옵션 찾기
       getBestGridOption(imageRatio) {
         let bestOption = ALL_GRID_OPTIONS[0];
         let minDiff = Infinity;
@@ -309,12 +347,13 @@ document.addEventListener("DOMContentLoaded", () => {
         return bestOption;
       },
 
+      // (v5.0) "4:5" 옵션 목록을 차이순으로 정렬
       getFilteredGridOptions(imageRatio) {
         const optionsWithDiff = ALL_GRID_OPTIONS.map((option) => ({
           ...option,
           diff: Math.abs(imageRatio - option.targetRatio),
         }));
-        return optionsWithDiff.sort((a, b) => a.diff - b.diff).slice(0, 4);
+        return optionsWithDiff.sort((a, b) => a.diff - b.diff);
       },
 
       createPaddedCanvas() {
@@ -324,10 +363,12 @@ document.addEventListener("DOMContentLoaded", () => {
         let outWidth, outHeight;
         const imgRatio = originalImage.width / originalImage.height;
 
+        // 캔버스가 이미지보다 가로로 넓음 (세로 꽉 참)
         if (targetRatio > imgRatio) {
           outHeight = originalImage.height;
           outWidth = Math.round(outHeight * targetRatio);
         } else {
+          // 캔버스가 이미지보다 세로로 넓음 (가로 꽉 참)
           outWidth = originalImage.width;
           outHeight = Math.round(outWidth / targetRatio);
         }
@@ -353,6 +394,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return canvas;
       },
 
+      // (v5.0) 분할 로직 (v3.3과 동일하나, 이제 4:5 옵션만 처리함)
       splitImage(imageToSplit, gridOption) {
         const { gridResultContainer } = App.elements;
         const { cols, rows } = gridOption;
@@ -360,6 +402,9 @@ document.addEventListener("DOMContentLoaded", () => {
         gridResultContainer.innerHTML = "";
         App.state.generatedPieces = [];
 
+        // imageToSplit는 (3*4) : (N*5) 비율의 캔버스임
+        // (예: 3x2 -> 12:10 = 1.2 비율)
+        // 이것을 3x2로 자르면, 각 조각은 (12/3) : (10/2) = 4:5 비율이 됨.
         const pieceWidth = imageToSplit.width / cols;
         const pieceHeight = imageToSplit.height / rows;
 
@@ -386,14 +431,23 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
             const dataUrl = canvas.toDataURL("image/png");
-            const name = `image_${r + 1}-${c + 1}.png`;
+            // (v5.0) 1번부터 순서대로 저장 (1, 2, 3, ...)
+            const pieceNumber = r * cols + c + 1;
+            const name = `image_${pieceNumber}.png`;
             App.state.generatedPieces.push({ name, data: dataUrl });
 
             const link = document.createElement("a");
             link.href = dataUrl;
             link.download = name;
-            link.title = `클릭해서 ${name} 저장`;
+            link.title = `클릭해서 ${pieceNumber}번 조각 저장`;
             link.target = "_blank";
+
+            // (v5.1) 이미지 위에 번호 표시
+            const numberLabel = document.createElement("span");
+            numberLabel.className = "grid-number-label";
+            numberLabel.textContent = pieceNumber;
+            link.appendChild(numberLabel);
+
             const img = document.createElement("img");
             img.src = dataUrl;
             link.appendChild(img);
@@ -434,6 +488,7 @@ document.addEventListener("DOMContentLoaded", () => {
       goToStep(stepToShow) {
         [
           App.elements.step1Upload,
+          App.elements.step2SmartSwitch,
           App.elements.step2Crop,
           App.elements.step2Options,
           App.elements.step3Result,
@@ -450,10 +505,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const { optionGroup } = App.elements;
         optionGroup.innerHTML = "";
         options.forEach((option) => {
-          const gridVis = option.id.includes("pano")
-            ? `${option.id.split("-")[0]}-pano`
-            : option.id;
-
+          // (v5.1) 1:1 옵션이 없으므로, pano 클래스가 기본임
+          const gridVis = option.id;
           const gridVisHtml = Array.from(
             { length: option.cols * option.rows },
             () => `<div class="grid-cell"></div>`
@@ -461,9 +514,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           const html = `
             <button class="option-card" data-grid="${option.id}">
-              <div class="grid-preview ${
-                option.id.includes("pano") ? "pano" : ""
-              }" data-grid-vis="${gridVis}">
+              <div class="grid-preview" data-grid-vis="${gridVis}">
                 ${gridVisHtml}
               </div>
               <strong>${option.text}</strong>
@@ -477,59 +528,26 @@ document.addEventListener("DOMContentLoaded", () => {
         if (currentActive) currentActive.classList.add("active");
       },
 
-      updateCropUI() {
+      // (v4.0) 크롭 UI 업데이트
+      updateCropUI(gridOption) {
         const { cropHeadingText } = App.elements;
-        const { selectedGridOption } = App.state;
-        cropHeadingText.innerHTML = `"${selectedGridOption.text}"`;
-        App.ui.updateFitFillToggle();
+        cropHeadingText.innerHTML = `"${gridOption.text}"`;
       },
 
-      updateFitFillToggle() {
-        const {
-          fitFillToggleButton,
-          colorPickerGroup,
-          cropperContainer,
-          fitPreviewContainer,
-        } = App.elements;
-        const { isCropMode, padColor, selectedGridOption, originalImage } =
-          App.state;
+      // (v4.0) 여백 제안 UI 업데이트
+      setupSmartSwitch(gridOption) {
+        const { padHeadingText, padOptionText, fitPreviewContainer } =
+          App.elements;
+        const { originalImage } = App.state;
 
-        if (isCropMode) {
-          fitFillToggleButton.textContent = "✂️ 자르기";
-          fitFillToggleButton.classList.add("active");
-          colorPickerGroup.style.display = "none";
-          cropperContainer.style.display = "block";
-          fitPreviewContainer.style.display = "none";
+        // 멘트 업데이트 (v5.1)
+        const boldText = gridOption.text.split(" ")[0]; // "1줄", "2줄"
+        padHeadingText.innerHTML = `"${boldText}"로 나누면`;
+        padOptionText.innerHTML = `"${gridOption.text}"`;
 
-          if (!App.state.cropperInstance && App.state.originalImage) {
-            // (*** 버그 3 수정 ***)
-            // '여백' 모드에서 '자르기'로 돌아올 때, cropper가 파괴된 상태일 수 있음.
-            // 이때 setupCropper를 다시 호출해야 함.
-            // 렌더링 타이밍을 위해 setTimeout으로 감싸기.
-            setTimeout(() => {
-              // 이 시점엔 cropperContainer가 display: block이 됨.
-              App.logic.setupCropper(App.state.selectedGridOption);
-            }, 0);
-          }
-        } else {
-          fitFillToggleButton.textContent = "⬜️ 여백 채우기";
-          fitFillToggleButton.classList.remove("active");
-          colorPickerGroup.style.display = "flex";
-          cropperContainer.style.display = "none";
-          fitPreviewContainer.style.display = "block";
-
-          fitPreviewContainer.style.backgroundColor = padColor;
-          if (selectedGridOption)
-            fitPreviewContainer.style.aspectRatio =
-              selectedGridOption.targetRatio;
-          if (originalImage)
-            fitPreviewContainer.style.backgroundImage = `url(${originalImage.src})`;
-
-          if (App.state.cropperInstance) {
-            App.state.cropperInstance.destroy();
-            App.state.cropperInstance = null;
-          }
-        }
+        // 미리보기 업데이트
+        fitPreviewContainer.style.aspectRatio = gridOption.targetRatio;
+        fitPreviewContainer.style.backgroundImage = `url(${originalImage.src})`;
       },
 
       setLoading(button, text, isLoading = true) {
