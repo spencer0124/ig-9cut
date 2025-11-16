@@ -1,15 +1,11 @@
-/* === 리팩토링된 script.js (v5.1: "4:5 썸네일" 전용, 버그 수정) === */
+/* === 리팩토링된 script.js (v5.2: 점선 가이드/이름 수정) === */
 
 document.addEventListener("DOMContentLoaded", () => {
   // --- (v5.1) "4:5 파노라마" 전용 옵션 정의 (이름 단순화) ---
   const ALL_GRID_OPTIONS = [
-    // 3x1 (4:5 Pano): 전체 비율 (3*4) : (1*5) = 12:5 = 2.4
     { id: "3x1-pano", text: "1줄 (3장)", cols: 3, rows: 1, targetRatio: 2.4 },
-    // 3x2 (4:5 Pano): 전체 비율 (3*4) : (2*5) = 12:10 = 1.2
     { id: "3x2-pano", text: "2줄 (6장)", cols: 3, rows: 2, targetRatio: 1.2 },
-    // 3x3 (4:5 Pano): 전체 비율 (3*4) : (3*5) = 12:15 = 0.8
     { id: "3x3-pano", text: "3줄 (9장)", cols: 3, rows: 3, targetRatio: 0.8 },
-    // 3x4 (4:5 Pano): 전체 비율 (3*4) : (4*5) = 12:20 = 0.6
     { id: "3x4-pano", text: "4줄 (12장)", cols: 3, rows: 4, targetRatio: 0.6 },
   ];
 
@@ -317,15 +313,34 @@ document.addEventListener("DOMContentLoaded", () => {
           aspectRatio: gridOption.targetRatio,
           viewMode: 1,
           autoCropArea: 1.0,
+          guides: false, // (*** v5.2 수정: 이 한 줄이 핵심입니다 ***)
           ready() {
-            // (v5.1 수정) 붉은 점선 가이드를 크롭 박스 안에 '동적'으로 주입
+            // (v5.2 수정) 붉은 점선 가이드 + 요청한 가로줄을 크롭 박스 안에 '동적'으로 주입
             const cropBox =
               App.elements.cropperContainer.querySelector(".cropper-crop-box");
             if (cropBox) {
+              // 1. 기존 가이드 삭제 (옵션 변경 시 중복 방지)
+              const oldGuides = cropBox.querySelector(".seam-guides-dynamic");
+              if (oldGuides) oldGuides.remove();
+
+              // 2. 새 가이드 컨테이너 생성
               const guides = document.createElement("div");
               guides.className = "seam-guides-dynamic";
-              guides.innerHTML =
-                '<div class="seam-line-dynamic"></div><div class="seam-line-dynamic"></div>';
+
+              // 3. (v5.0) 붉은색 '세로' Seam 가이드 2개 추가
+              guides.innerHTML = `
+                <div class="seam-line-dynamic vertical vertical-1"></div>
+                <div class="seam-line-dynamic vertical vertical-2"></div>
+              `;
+
+              // 4. (v5.2) '줄 수'에 맞는 '가로' 분할선 추가
+              for (let i = 1; i < gridOption.rows; i++) {
+                const hLine = document.createElement("div");
+                hLine.className = "seam-line-dynamic horizontal";
+                hLine.style.top = `${(i / gridOption.rows) * 100}%`;
+                guides.appendChild(hLine);
+              }
+
               cropBox.appendChild(guides);
             }
           },

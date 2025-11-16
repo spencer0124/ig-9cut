@@ -255,24 +255,34 @@ p > strong {
 }
 .seam-line-dynamic {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  /* Seam 1 Center: 1080px / 3240px = 33.33%
-    Seam 2 Center: 2160px / 3240px = 66.66%
-    Seam Width: 67px / 3240px = 2.0679%
-  */
-  width: 2.0679%;
   background-color: rgba(255, 0, 0, 0.4);
   border-left: 1px dashed rgba(255, 255, 255, 0.7);
   border-right: 1px dashed rgba(255, 255, 255, 0.7);
 }
-.seam-line-dynamic:nth-child(1) {
+/* 세로 점선 (Vertical Seams) */
+.seam-line-dynamic.vertical {
+  top: 0;
+  bottom: 0;
+  /* Seam Width: 67px / 3240px = 2.0679% */
+  width: 2.0679%;
+}
+.seam-line-dynamic.vertical-1 {
   /* left = Center - (Width / 2) = 33.333% - (2.0679% / 2) = 32.3% */
   left: 32.3%;
 }
-.seam-line-dynamic:nth-child(2) {
+.seam-line-dynamic.vertical-2 {
   /* left = Center - (Width / 2) = 66.666% - (2.0679% / 2) = 65.63% */
   left: 65.63%;
+}
+/* (v5.2) 가로 점선 (Horizontal Seams) - 인스타는 가로 Seam이 없음!
+   대신, 사용자가 요청한 '줄 수에 맞는 선'을 보여줌
+*/
+.seam-line-dynamic.horizontal {
+  left: 0;
+  right: 0;
+  height: 1px; /* 얇은 실선 */
+  border: none;
+  background-color: rgba(255, 255, 255, 0.7); /* 흰색 점선 */
 }
 
 /* --- 단계 3: 결과 그리드 --- */
