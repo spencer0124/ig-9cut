@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>인스타 파노라마 분할기</title>
+    <title>인스타 4:5 파노라마 정복</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css"
@@ -19,8 +19,11 @@
       <div class="content-area">
         <div id="step-1-upload" class="toss-card active">
           <div class="card-content">
-            <h1>파노라마 피드<br />한번에 만들기</h1>
-            <p>프로필 썸네일에 3:4 비율로<br />딱 맞게 나눠드려요.</p>
+            <h1>4:5 파노라마 피드<br />완벽하게 만들기</h1>
+            <p>
+              인스타 썸네일 잘림 현상까지 고려한<br />
+              정확한 오버랩 분할을 제공합니다.
+            </p>
           </div>
           <div class="card-footer-simple">
             <button id="uploadButton" class="btn-primary">+ 사진 올리기</button>
@@ -42,15 +45,14 @@
               나눌까요?
             </h1>
             <p>
-              원본 비율을 유지하기 위해, 추천된
-              <strong id="padOptionText">"2줄"</strong> 비율의 빈 공간은 검은색
-              여백으로 채워져요.
+              선택한 <strong id="padOptionText">"2줄"</strong> 비율에 맞게<br />
+              빈 공간은 검은색 여백으로 채워져요.
             </p>
             <div id="fitPreviewContainer"></div>
           </div>
           <div class="card-footer button-group">
             <button id="forceCropButton" class="btn-secondary">
-              ✂️ 아니요, 직접 자를래요
+              ✂️ 아니요, 자를래요
             </button>
             <button id="splitWithPadButton" class="btn-primary">
               💙 네, 여백으로 나눌게요
@@ -61,14 +63,13 @@
         <div id="step-2-crop" class="toss-card">
           <div class="card-content">
             <h1>
-              사진에 가장 잘 맞는<br /><strong id="cropHeadingText"
-                >"2줄 파노라마"</strong
-              >로 나눌까요?
+              <strong id="cropHeadingText">"2줄 파노라마"</strong><br />
+              영역을 선택하세요
             </h1>
             <p>
-              선택한 줄 수에 맞춰 <strong>3:4 비율</strong>로 나눕니다.<br />
-              <strong>흰색 점선 (┆)</strong>은 사진이 나뉘는 '분할선'입니다.
-              이미지가 이 선을 자연스럽게 가로지르게 배치하세요.
+              흰색 실선은 이미지가 나뉘는 곳,<br />
+              <span style="color: #ff4b4b">붉은 영역</span>은 썸네일에서 잘리는
+              곳입니다.
             </p>
             <div id="cropperContainer">
               <img id="cropperImage" src="" alt="크롭할 이미지" />
@@ -76,7 +77,7 @@
           </div>
           <div class="card-footer button-group">
             <button id="changeGridButton" class="btn-secondary">
-              🔄 다른 줄로 나누기
+              🔄 줄 수 변경
             </button>
             <button id="cropAndSplitButton" class="btn-primary">
               💙 이대로 나누기
@@ -86,14 +87,14 @@
 
         <div id="step-2-options" class="toss-card">
           <div class="card-content">
-            <h1>다른 줄로 나눌까요?</h1>
-            <p>프로필에 보일 파노라마 줄 수를 선택하세요.</p>
+            <h1>몇 줄로 나눌까요?</h1>
+            <p>4:5 비율 파노라마 기준입니다.</p>
             <img id="sourcePreview" src="" alt="선택한 사진" />
             <div class="option-group" id="optionGroup"></div>
           </div>
           <div class="card-footer">
             <button id="backToCropButton" class="btn-primary">
-              ↩️ 추천으로 돌아가기
+              ↩️ 돌아가기
             </button>
           </div>
         </div>
@@ -101,7 +102,10 @@
         <div id="step-3-result" class="toss-card">
           <div class="card-content">
             <h1>완료!</h1>
-            <p>3:4 비율로 저장됐습니다.<br />순서대로 1번부터 업로드하세요.</p>
+            <p>
+              순서대로(1번부터) 업로드하면<br />
+              피드에서 끊김 없이 이어집니다.
+            </p>
             <div id="gridResultContainer"></div>
           </div>
           <div class="card-footer button-group">

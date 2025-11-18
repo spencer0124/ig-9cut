@@ -7,10 +7,10 @@
 
 html,
 body {
-  height: 100vh; /* v7.0: 토스 트릭을 위한 CSS 변수 사용 준비 */
+  height: 100vh;
   height: calc(var(--app-height, 1vh) * 100);
-  overflow: hidden; /* 브라우저 스크롤 방지 */
-  background-color: #f2f4f6; /* 토스 배경 회색 */
+  overflow: hidden;
+  background-color: #f2f4f6;
   font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
     "Pretendard", "Segoe UI", Roboto, sans-serif;
 }
@@ -25,16 +25,16 @@ button {
 .app-container {
   display: flex;
   flex-direction: column;
-  height: 100%; /* body 높이 100% */
+  height: 100%;
   width: 100%;
-  max-width: 600px; /* PC에서는 너무 안 커지게 */
+  max-width: 600px;
   margin: 0 auto;
-  padding: 16px 16px 0 16px; /* 하단 여백은 card-footer가 처리 */
+  padding: 16px 16px 0 16px;
 }
 
 .ad-banner {
   width: 100%;
-  height: 60px; /* 사장님 요청: 카톡 배너 크기 */
+  height: 60px;
   background-color: #e5e8eb;
   border-radius: 12px;
   margin-bottom: 16px;
@@ -46,18 +46,17 @@ button {
 }
 
 .content-area {
-  flex: 1; /* 배너를 제외한 모든 남은 공간 차지 */
-  overflow: hidden; /* 이 컨테이너는 스크롤 안 됨 */
-  position: relative; /* 카드 배치를 위해 */
+  flex: 1;
+  overflow: hidden;
+  position: relative;
 }
 
-/* --- v7.0: 토스 카드 레이아웃 (앱 구조에 맞게 수정) --- */
+/* --- 토스 카드 레이아웃 --- */
 .toss-card {
   background-color: #ffffff;
-  /* 둥근 모서리는 상단에만 줌 (토스 앱처럼) */
   border-radius: 20px 20px 0 0;
   width: 100%;
-  height: 100%; /* .content-area를 꽉 채움 */
+  height: 100%;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   display: none;
   flex-direction: column;
@@ -67,15 +66,14 @@ button {
   display: flex;
 }
 
-/* v7.0: 스크롤되는 컨텐츠 영역 */
 .card-content {
-  flex: 1; /* 푸터를 제외한 모든 남은 공간 차지 */
-  overflow-y: auto; /* ★★★ 여기가 스크롤됨 ★★★ */
+  flex: 1;
+  overflow-y: auto;
   padding: 32px 24px;
   text-align: left;
 }
 
-/* --- 멘트 (카피) --- */
+/* --- 멘트 --- */
 h1 {
   font-size: 26px;
   font-weight: 700;
@@ -97,7 +95,7 @@ p > strong {
   font-weight: 600;
 }
 
-/* --- 토스 CTA 버튼 --- */
+/* --- 버튼 --- */
 .btn-primary {
   width: 100%;
   height: 52px;
@@ -135,7 +133,7 @@ p > strong {
   cursor: not-allowed;
 }
 
-/* --- 단계 2: 원본 미리보기 (옵션 선택) --- */
+/* --- 단계 2: 원본 미리보기 --- */
 #sourcePreview {
   width: 60px;
   height: 60px;
@@ -145,7 +143,7 @@ p > strong {
   border: 1px solid #f2f4f6;
 }
 
-/* --- 시각적 옵션 카드 (단계 2) --- */
+/* --- 옵션 카드 --- */
 .option-group {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -181,20 +179,9 @@ p > strong {
   display: grid;
   gap: 3px;
 }
-.grid-cell {
-  background-color: #dde0e3;
-  border-radius: 2px;
-}
-.option-card.active .grid-cell {
-  background-color: #0070ff;
-}
-
-/* (v5.0) 4:5 파노라마 옵션 비주얼 (1:1 삭제) */
 .grid-preview .grid-cell {
   background-color: #dde0e3;
   width: 100%;
-  /* (v5.1 수정) 미리보기 깨짐의 원인. aspect-ratio 삭제 */
-  /* aspect-ratio: 4 / 5; */
   border-radius: 1px;
 }
 .grid-preview[data-grid-vis="3x1-pano"] {
@@ -212,14 +199,13 @@ p > strong {
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr 1fr;
 }
-
 .option-card.active .grid-preview .grid-cell {
   background-color: #0070ff;
 }
 
-/* --- (v5.0) 단계 2.A/2.B: 크롭 & 여백 미리보기 --- */
+/* --- 크롭 & 여백 미리보기 --- */
 #cropperContainer {
-  position: relative; /* (v5.0) 안전 영역 가이드를 위한 기준 */
+  position: relative;
   width: 100%;
   height: 40vh;
   background-color: #f2f4f6;
@@ -230,7 +216,7 @@ p > strong {
 #fitPreviewContainer {
   width: 100%;
   height: 40vh;
-  background-color: #000000; /* 여백은 검은색 고정 */
+  background-color: #000000;
   border-radius: 12px;
   overflow: hidden;
   margin-bottom: 24px;
@@ -240,65 +226,74 @@ p > strong {
 }
 #cropperContainer img {
   display: block;
-  max-width: 100%; /* 이게 중요! */
+  max-width: 100%;
 }
 
-/* === ▼▼▼ [수정됨] v-fix: 3:4 (붉은선 제거) ▼▼▼ === */
-/* .cropper-crop-box는 cropper.js가 생성하는 클래스 */
+/* --- (v6.0) 새로운 가이드 스타일 --- */
 .cropper-crop-box .seam-guides-dynamic {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none; /* 크롭퍼 조작을 방해하지 않음 */
+  pointer-events: none;
 }
-.seam-line-dynamic {
+/* 썸네일에서 잘려나가는 영역 (붉은 반투명) */
+.seam-margin-zone {
   position: absolute;
-  /* 기본 스타일은 투명하게. 개별 스타일이 덮어씀 */
-  background-color: transparent;
-}
-
-/* 1. '내부 분할선' (가로/세로, 흰색 점선) */
-.seam-line-dynamic.internal-split-line {
-  background-color: rgba(255, 255, 255, 0.7); /* 흰색 점선 */
-}
-.seam-line-dynamic.vertical-split {
   top: 0;
   bottom: 0;
-  width: 1px; /* 얇은 실선 */
-  margin-left: -0.5px; /* 중앙 정렬 */
+  width: 1.08%; /* 33.5px / 3106px */
+  background-color: rgba(255, 0, 0, 0.3);
+  border: 0;
 }
-.seam-line-dynamic.vertical-1 {
-  left: 33.333%;
+.seam-margin-zone.left {
+  left: 0;
+  border-right: 1px solid rgba(255, 0, 0, 0.5);
 }
-.seam-line-dynamic.vertical-2 {
-  left: 66.666%;
+.seam-margin-zone.right {
+  right: 0;
+  border-left: 1px solid rgba(255, 0, 0, 0.5);
 }
 
-/* 2. '가로 분할선' - 이제 internal-split-line을 따름 */
-.seam-line-dynamic.horizontal {
+/* 이미지가 나뉘는 분기점 (흰색 실선) */
+.seam-split-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+}
+.seam-split-line.split-1 {
+  left: 33.69%;
+} /* (33.5+1013)/3106 */
+.seam-split-line.split-2 {
+  left: 66.31%;
+} /* (33.5+1013+1013)/3106 */
+
+/* 가로 분할선 (흰색 점선) */
+.seam-horizontal-line {
+  position: absolute;
   left: 0;
   right: 0;
-  height: 1px; /* 얇은 실선 */
+  height: 1px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.6);
 }
-/* === ▲▲▲ [수정됨] v-fix: 3:4 (붉은선 제거) ▲▲▲ === */
 
-/* --- 단계 3: 결과 그리드 --- */
-/* [v-fix] 간격/테두리/패딩 수정 */
+/* --- 결과 그리드 --- */
 #gridResultContainer {
   display: grid;
-  gap: 2px; /* 간격 2px로 축소 */
-  border: none; /* 컨테이너 테두리 제거 */
-  border-radius: 12px; /* 둥근 모서리는 유지 */
-  padding: 0; /* 컨테이너 패딩 제거 */
-  overflow: hidden; /* 둥근 모서리 안쪽으로 조각들 자르기 */
+  gap: 5px;
+  border: 1px solid #f2f4f6;
+  border-radius: 12px;
+  padding: 5px;
 }
 #gridResultContainer a {
-  position: relative; /* (v5.1) 번호 표시를 위한 기준 */
+  position: relative;
   display: block;
   line-height: 0;
-  border-radius: 0; /* 조각별 둥근 테두리 제거 */
+  border-radius: 8px;
   overflow: hidden;
   transition: transform 0.1s ease;
 }
@@ -309,7 +304,6 @@ p > strong {
   width: 100%;
   height: auto;
 }
-/* (v5.1) 결과물에 번호 표시 */
 .grid-number-label {
   position: absolute;
   top: 4px;
@@ -327,7 +321,7 @@ p > strong {
   line-height: 1;
 }
 
-/* --- v7.0: 하단 고정 버튼 --- */
+/* --- 하단 버튼 --- */
 .card-footer {
   padding: 12px 24px 24px 24px;
   background-color: #fff;
@@ -337,8 +331,6 @@ p > strong {
   display: flex;
   gap: 10px;
 }
-
-/* v7.0: 1단계용 심플 푸터 */
 .card-footer-simple {
   padding: 12px 24px 24px 24px;
   background-color: #fff;

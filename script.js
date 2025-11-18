@@ -1,35 +1,49 @@
-/* === 리팩토링된 script.js (v-fix: 3:4 비율) === */
-
 document.addEventListener("DOMContentLoaded", () => {
-  // --- ▼▼▼ [수정됨] v-fix: 3:4 비율로 targetRatio 변경 ---
+  // --- (v6.0) 3106px 너비 기준 4:5 파노라마 비율 정의 ---
+  // W = 3106px
+  // H = 1350px * Rows
   const ALL_GRID_OPTIONS = [
-    { id: "3x1-pano", text: "1줄 (3장)", cols: 3, rows: 1, targetRatio: 2.25 }, // (3 * 3) / (1 * 4) = 9/4
-    { id: "3x2-pano", text: "2줄 (6장)", cols: 3, rows: 2, targetRatio: 1.125 }, // (3 * 3) / (2 * 4) = 9/8
-    { id: "3x3-pano", text: "3줄 (9장)", cols: 3, rows: 3, targetRatio: 0.75 }, // (3 * 3) / (3 * 4) = 9/12
+    {
+      id: "3x1-pano",
+      text: "1줄 (3장)",
+      cols: 3,
+      rows: 1,
+      targetRatio: 3106 / 1350,
+    }, // ~2.30
+    {
+      id: "3x2-pano",
+      text: "2줄 (6장)",
+      cols: 3,
+      rows: 2,
+      targetRatio: 3106 / 2700,
+    }, // ~1.15
+    {
+      id: "3x3-pano",
+      text: "3줄 (9장)",
+      cols: 3,
+      rows: 3,
+      targetRatio: 3106 / 4050,
+    }, // ~0.76
     {
       id: "3x4-pano",
       text: "4줄 (12장)",
       cols: 3,
       rows: 4,
-      targetRatio: 0.5625,
-    }, // (3 * 3) / (4 * 4) = 9/16
+      targetRatio: 3106 / 5400,
+    }, // ~0.57
   ];
-  // --- ▲▲▲ [수정됨] v-fix: 3:4 비율로 targetRatio 변경 ---
 
-  // (v4.0) 사진 손실이 이 값(%) 이상이면 '여백 채우기'를 제안
-  const CROP_LOSS_THRESHOLD_RATIO = 0.4; // 40% 이상 잘려나갈 때
+  const CROP_LOSS_THRESHOLD_RATIO = 0.4;
 
   const App = {
-    // 1. 앱의 상태를 관리하는 객체
     state: {
       originalImage: null,
       generatedPieces: [],
       cropperInstance: null,
       selectedGridOption: null,
-      padColor: "#000000", // 여백 색상 (검은색 고정)
+      padColor: "#000000",
     },
 
-    // 2. DOM 요소를 저장하는 객체
     elements: {
       step1Upload: null,
       step2Crop: null,
@@ -42,25 +56,20 @@ document.addEventListener("DOMContentLoaded", () => {
       gridResultContainer: null,
       zipDownloadButton: null,
       restartButton: null,
-      // 여백 제안
       padHeadingText: null,
       padOptionText: null,
       fitPreviewContainer: null,
       forceCropButton: null,
       splitWithPadButton: null,
-      // 크롭 조정
       cropperImage: null,
       cropHeadingText: null,
       cropperContainer: null,
       cropAndSplitButton: null,
       changeGridButton: null,
-      // (v5.1) seamGuides 요소를 삭제함 (동적 생성)
-      // 옵션 변경
       optionGroup: null,
       backToCropButton: null,
     },
 
-    // 3. 앱 초기화
     init() {
       if (this.helpers.checkAndEscapeKakaoInApp()) return;
       this.ui.setAppHeight();
@@ -69,7 +78,6 @@ document.addEventListener("DOMContentLoaded", () => {
       this.bindEvents();
     },
 
-    // 3-2. DOM 요소 찾기
     findDOMElements() {
       this.elements.step1Upload = document.getElementById("step-1-upload");
       this.elements.step2SmartSwitch = document.getElementById(
@@ -89,7 +97,6 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("zipDownloadButton");
       this.elements.restartButton = document.getElementById("restartButton");
 
-      // 여백 제안 (Step 2A)
       this.elements.padHeadingText = document.getElementById("padHeadingText");
       this.elements.padOptionText = document.getElementById("padOptionText");
       this.elements.fitPreviewContainer = document.getElementById(
@@ -100,7 +107,6 @@ document.addEventListener("DOMContentLoaded", () => {
       this.elements.splitWithPadButton =
         document.getElementById("splitWithPadButton");
 
-      // 크롭 조정 (Step 2B)
       this.elements.cropperImage = document.getElementById("cropperImage");
       this.elements.cropHeadingText =
         document.getElementById("cropHeadingText");
@@ -111,13 +117,11 @@ document.addEventListener("DOMContentLoaded", () => {
       this.elements.changeGridButton =
         document.getElementById("changeGridButton");
 
-      // 옵션 변경 (Step 3)
       this.elements.optionGroup = document.getElementById("optionGroup");
       this.elements.backToCropButton =
         document.getElementById("backToCropButton");
     },
 
-    // 4. 모든 이벤트 리스너를 등록하는 메소드
     bindEvents() {
       this.elements.uploadButton.addEventListener(
         "click",
@@ -127,7 +131,6 @@ document.addEventListener("DOMContentLoaded", () => {
         "change",
         this.handlers.handleImageChange
       );
-
       this.elements.forceCropButton.addEventListener(
         "click",
         this.handlers.handleForceCrop
@@ -136,7 +139,6 @@ document.addEventListener("DOMContentLoaded", () => {
         "click",
         this.handlers.handleSplitWithPad
       );
-
       this.elements.cropAndSplitButton.addEventListener(
         "click",
         this.handlers.handleCropAndSplit
@@ -145,7 +147,6 @@ document.addEventListener("DOMContentLoaded", () => {
         "click",
         this.handlers.handleChangeGrid
       );
-
       this.elements.optionGroup.addEventListener(
         "click",
         this.handlers.handleOptionSelect
@@ -154,7 +155,6 @@ document.addEventListener("DOMContentLoaded", () => {
         "click",
         this.handlers.handleBackToCrop
       );
-
       this.elements.zipDownloadButton.addEventListener(
         "click",
         this.logic.downloadAllAsZip
@@ -165,7 +165,6 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     },
 
-    // 5. 이벤트 핸들러 함수 모음
     handlers: {
       handleUploadClick() {
         App.elements.imageLoader.click();
@@ -188,19 +187,16 @@ document.addEventListener("DOMContentLoaded", () => {
             const imageRatio =
               App.state.originalImage.width / App.state.originalImage.height;
             const bestOption = App.logic.getBestGridOption(imageRatio);
-            App.state.selectedGridOption = bestOption; // 추천 옵션을 상태에 저장
+            App.state.selectedGridOption = bestOption;
 
-            // (v4.0) 비율 차이(손실률) 계산
             const diff = Math.abs(imageRatio - bestOption.targetRatio);
             const lossPercent =
               diff / Math.max(imageRatio, bestOption.targetRatio);
 
             if (lossPercent > CROP_LOSS_THRESHOLD_RATIO) {
-              // A. 손실이 크다 -> "여백 채우기" 제안
               App.ui.setupSmartSwitch(bestOption);
               App.ui.goToStep(App.elements.step2SmartSwitch);
             } else {
-              // B. 손실이 적다 -> "크롭 조정" (90%의 흐름)
               App.ui.goToStep(App.elements.step2Crop);
               setTimeout(() => {
                 App.logic.setupCropper(bestOption);
@@ -211,7 +207,6 @@ document.addEventListener("DOMContentLoaded", () => {
         reader.readAsDataURL(file);
       },
 
-      // [아니요, 직접 자를래요]
       handleForceCrop() {
         App.ui.goToStep(App.elements.step2Crop);
         setTimeout(() => {
@@ -219,11 +214,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 0);
       },
 
-      // [네, 여백으로 나눌게요]
       async handleSplitWithPad() {
         App.ui.setLoading(App.elements.splitWithPadButton, "나누는 중...");
         const canvasToSplit = App.logic.createPaddedCanvas();
-
         const imageToSplit = new Image();
         imageToSplit.src = canvasToSplit.toDataURL("image/png");
         imageToSplit.onload = () => {
@@ -236,19 +229,9 @@ document.addEventListener("DOMContentLoaded", () => {
         };
       },
 
-      // [이대로 나누기] (크롭 모드)
       async handleCropAndSplit() {
         App.ui.setLoading(App.elements.cropAndSplitButton, "나누는 중...");
-
-        if (!App.state.cropperInstance) {
-          console.error("Cropper가 초기화되지 않았습니다.");
-          App.ui.setLoading(
-            App.elements.cropAndSplitButton,
-            "오류 발생",
-            false
-          );
-          return;
-        }
+        if (!App.state.cropperInstance) return;
 
         const canvasToSplit = App.state.cropperInstance.getCroppedCanvas();
         const imageToSplit = new Image();
@@ -263,7 +246,6 @@ document.addEventListener("DOMContentLoaded", () => {
         };
       },
 
-      // [다른 줄로 나누기]
       handleChangeGrid() {
         const imageRatio =
           App.state.originalImage.width / App.state.originalImage.height;
@@ -272,11 +254,9 @@ document.addEventListener("DOMContentLoaded", () => {
         App.ui.goToStep(App.elements.step2Options);
       },
 
-      // 옵션 선택
       handleOptionSelect(e) {
         const selectedCard = e.target.closest(".option-card");
         if (!selectedCard) return;
-
         const optionId = selectedCard.dataset.grid;
         const selectedOption = ALL_GRID_OPTIONS.find((o) => o.id === optionId);
 
@@ -286,12 +266,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 0);
       },
 
-      // 추천으로 돌아가기
       handleBackToCrop() {
         App.ui.goToStep(App.elements.step2Crop);
       },
 
-      // 새로 하기
       handleRestart() {
         App.state.originalImage = null;
         App.state.generatedPieces = [];
@@ -306,11 +284,10 @@ document.addEventListener("DOMContentLoaded", () => {
       },
     },
 
-    // 6. 핵심 비즈니스 로직 모음
     logic: {
       setupCropper(gridOption) {
         App.state.selectedGridOption = gridOption;
-        App.ui.updateCropUI(gridOption); // UI 업데이트 (제목)
+        App.ui.updateCropUI(gridOption);
 
         if (App.state.cropperInstance) {
           App.state.cropperInstance.destroy();
@@ -320,36 +297,37 @@ document.addEventListener("DOMContentLoaded", () => {
           aspectRatio: gridOption.targetRatio,
           viewMode: 1,
           autoCropArea: 1.0,
-          guides: false, // (*** v5.2 수정: 이 한 줄이 핵심입니다 ***)
+          guides: false, // 기본 격자 제거
           ready() {
-            // (v5.2 수정) 붉은 점선 가이드 + 요청한 가로줄을 크롭 박스 안에 '동적'으로 주입
+            // (v6.0) 새로운 가이드 동적 생성
             const cropBox =
               App.elements.cropperContainer.querySelector(".cropper-crop-box");
             if (cropBox) {
-              // 1. 기존 가이드 삭제 (옵션 변경 시 중복 방지)
               const oldGuides = cropBox.querySelector(".seam-guides-dynamic");
               if (oldGuides) oldGuides.remove();
 
-              // 2. 새 가이드 컨테이너 생성
               const guides = document.createElement("div");
               guides.className = "seam-guides-dynamic";
 
-              // === ▼▼▼ [수정됨] v-fix: 3:4 (붉은선 제거) ▼▼▼ ===
-              // 3. (흰색) 내부 세로 분할선 (1px)
-              guides.innerHTML = `
-                <div class="seam-line-dynamic internal-split-line vertical-split vertical-1"></div>
-                <div class="seam-line-dynamic internal-split-line vertical-split vertical-2"></div>
+              // 1. 붉은색 Margin Zone (좌/우)
+              guides.innerHTML += `
+                <div class="seam-margin-zone left"></div>
+                <div class="seam-margin-zone right"></div>
               `;
 
-              // 4. '줄 수'에 맞는 '가로' 분할선 추가 (흰색)
+              // 2. 흰색 Split Line (분기점)
+              guides.innerHTML += `
+                <div class="seam-split-line split-1"></div>
+                <div class="seam-split-line split-2"></div>
+              `;
+
+              // 3. 가로 분할선 (Rows)
               for (let i = 1; i < gridOption.rows; i++) {
                 const hLine = document.createElement("div");
-                hLine.className =
-                  "seam-line-dynamic internal-split-line horizontal";
+                hLine.className = "seam-horizontal-line";
                 hLine.style.top = `${(i / gridOption.rows) * 100}%`;
                 guides.appendChild(hLine);
               }
-              // === ▲▲▲ [수정됨] v-fix: 3:4 (붉은선 제거) ▲▲▲ ===
 
               cropBox.appendChild(guides);
             }
@@ -357,11 +335,9 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       },
 
-      // (v5.0) "4:5" 옵션 중에서만 최적의 옵션 찾기
       getBestGridOption(imageRatio) {
         let bestOption = ALL_GRID_OPTIONS[0];
         let minDiff = Infinity;
-
         ALL_GRID_OPTIONS.forEach((option) => {
           const diff = Math.abs(imageRatio - option.targetRatio);
           if (diff < minDiff) {
@@ -372,7 +348,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return bestOption;
       },
 
-      // (v5.0) "4:5" 옵션 목록을 차이순으로 정렬
       getFilteredGridOptions(imageRatio) {
         const optionsWithDiff = ALL_GRID_OPTIONS.map((option) => ({
           ...option,
@@ -388,12 +363,10 @@ document.addEventListener("DOMContentLoaded", () => {
         let outWidth, outHeight;
         const imgRatio = originalImage.width / originalImage.height;
 
-        // 캔버스가 이미지보다 가로로 넓음 (세로 꽉 참)
         if (targetRatio > imgRatio) {
           outHeight = originalImage.height;
           outWidth = Math.round(outHeight * targetRatio);
         } else {
-          // 캔버스가 이미지보다 세로로 넓음 (가로 꽉 참)
           outWidth = originalImage.width;
           outHeight = Math.round(outWidth / targetRatio);
         }
@@ -419,7 +392,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return canvas;
       },
 
-      // (v5.0) 분할 로직 (v3.3과 동일하나, 이제 4:5 옵션만 처리함)
+      // (v6.0) 핵심: 겹침을 고려한 분할 로직
       splitImage(imageToSplit, gridOption) {
         const { gridResultContainer } = App.elements;
         const { cols, rows } = gridOption;
@@ -427,49 +400,59 @@ document.addEventListener("DOMContentLoaded", () => {
         gridResultContainer.innerHTML = "";
         App.state.generatedPieces = [];
 
-        // imageToSplit는 이제 (3*3) : (N*4) 비율의 캔버스임
-        // (예: 3x2 -> 9:8 = 1.125 비율)
-        // 이것을 3x2로 자르면, 각 조각은 (9/3) : (8/2) = 3:4 비율이 됨.
-        const pieceWidth = imageToSplit.width / cols;
-        const pieceHeight = imageToSplit.height / rows;
+        // 1. Master Canvas 생성 (W:3106 기준)
+        // imageToSplit을 3106px 폭으로 리사이징합니다.
+        const masterWidth = 3106;
+        const masterHeight = 1350 * rows;
+
+        const masterCanvas = document.createElement("canvas");
+        masterCanvas.width = masterWidth;
+        masterCanvas.height = masterHeight;
+        const mCtx = masterCanvas.getContext("2d");
+        mCtx.drawImage(imageToSplit, 0, 0, masterWidth, masterHeight);
+
+        // 2. 조각내기 (Slicing)
+        // 각 조각은 1080 x 1350
+        const pieceWidth = 1080;
+        const pieceHeight = 1350;
+
+        const sliceCanvas = document.createElement("canvas");
+        sliceCanvas.width = pieceWidth;
+        sliceCanvas.height = pieceHeight;
+        const sCtx = sliceCanvas.getContext("2d");
 
         gridResultContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        canvas.width = Math.round(pieceWidth);
-        canvas.height = Math.round(pieceHeight);
+        // 좌표 설정 (PDF 원리 적용)
+        const xCoords = [0, 1013, 2026]; // 1열, 2열, 3열의 시작 x좌표
 
         for (let r = 0; r < rows; r++) {
           for (let c = 0; c < cols; c++) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(
-              imageToSplit,
-              c * pieceWidth,
-              r * pieceHeight,
+            sCtx.clearRect(0, 0, pieceWidth, pieceHeight);
+
+            // Master Canvas에서 겹침을 고려하여 1080px씩 추출
+            sCtx.drawImage(
+              masterCanvas,
+              xCoords[c],
+              r * pieceHeight, // sx, sy
               pieceWidth,
-              pieceHeight,
+              pieceHeight, // sw, sh
               0,
-              0,
-              canvas.width,
-              canvas.height
+              0, // dx, dy
+              pieceWidth,
+              pieceHeight // dw, dh
             );
 
-            const dataUrl = canvas.toDataURL("image/png");
-
-            // [v-fix] 인스타 업로드 순서(아래->위)로 번호 저장 (7,8,9 -> 4,5,6 -> 1,2,3)
-            const pieceNumber = (rows - 1 - r) * cols + c + 1;
-
+            const dataUrl = sliceCanvas.toDataURL("image/png");
+            const pieceNumber = r * cols + c + 1;
             const name = `image_${pieceNumber}.png`;
             App.state.generatedPieces.push({ name, data: dataUrl });
 
             const link = document.createElement("a");
             link.href = dataUrl;
             link.download = name;
-            link.title = `클릭해서 ${pieceNumber}번 조각 저장`;
             link.target = "_blank";
 
-            // (v5.1) 이미지 위에 번호 표시
             const numberLabel = document.createElement("span");
             numberLabel.className = "grid-number-label";
             numberLabel.textContent = pieceNumber;
@@ -492,14 +475,7 @@ document.addEventListener("DOMContentLoaded", () => {
         App.ui.setLoading(zipDownloadButton, "압축 중...");
         try {
           const zip = new JSZip();
-          // (v-fix) .zip 파일도 번호 순서대로 정렬 (1, 2, 3...)
-          const sortedPieces = [...generatedPieces].sort((a, b) => {
-            const numA = parseInt(a.name.match(/\d+/)[0]);
-            const numB = parseInt(b.name.match(/\d+/)[0]);
-            return numA - numB;
-          });
-
-          for (const piece of sortedPieces) {
+          for (const piece of generatedPieces) {
             const imageData = piece.data.split(",")[1];
             zip.file(piece.name, imageData, { base64: true });
           }
@@ -517,7 +493,6 @@ document.addEventListener("DOMContentLoaded", () => {
       },
     },
 
-    // 7. UI 변경 관련 함수 모음
     ui: {
       goToStep(stepToShow) {
         [
@@ -539,7 +514,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const { optionGroup } = App.elements;
         optionGroup.innerHTML = "";
         options.forEach((option) => {
-          // (v5.1) 1:1 옵션이 없으므로, pano 클래스가 기본임
           const gridVis = option.id;
           const gridVisHtml = Array.from(
             { length: option.cols * option.rows },
@@ -562,24 +536,18 @@ document.addEventListener("DOMContentLoaded", () => {
         if (currentActive) currentActive.classList.add("active");
       },
 
-      // (v4.0) 크롭 UI 업데이트
       updateCropUI(gridOption) {
         const { cropHeadingText } = App.elements;
         cropHeadingText.innerHTML = `"${gridOption.text}"`;
       },
 
-      // (v4.0) 여백 제안 UI 업데이트
       setupSmartSwitch(gridOption) {
         const { padHeadingText, padOptionText, fitPreviewContainer } =
           App.elements;
         const { originalImage } = App.state;
-
-        // 멘트 업데이트 (v5.1)
-        const boldText = gridOption.text.split(" ")[0]; // "1줄", "2줄"
+        const boldText = gridOption.text.split(" ")[0];
         padHeadingText.innerHTML = `"${boldText}"로 나누면`;
         padOptionText.innerHTML = `"${gridOption.text}"`;
-
-        // 미리보기 업데이트
         fitPreviewContainer.style.aspectRatio = gridOption.targetRatio;
         fitPreviewContainer.style.backgroundImage = `url(${originalImage.src})`;
       },
@@ -590,12 +558,10 @@ document.addEventListener("DOMContentLoaded", () => {
       },
     },
 
-    // 8. 헬퍼 함수 모음
     helpers: {
       checkAndEscapeKakaoInApp() {
         const userAgent = navigator.userAgent.toLowerCase();
         if (!/kakaotalk/i.test(userAgent)) return false;
-
         const currentUrl = window.location.href;
         const isIOS = /iphone|ipad|ipod/i.test(userAgent);
         window.location.href =
@@ -610,6 +576,5 @@ document.addEventListener("DOMContentLoaded", () => {
     },
   };
 
-  // --- 앱 실행 ---
   App.init();
 });
