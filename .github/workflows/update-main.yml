@@ -16,6 +16,6 @@ jobs:
         run: |
           git config user.email "action@github.com"
           git config user.name "Auto Bot"
-          git submodule update --remote grid
-          git add grid
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Update grid tool" && git push)
+          git submodule update --remote ig-9cut
+          git add ig-9cut
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update ig-9cut tool" && git push)
