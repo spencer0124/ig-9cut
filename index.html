@@ -20,7 +20,18 @@
     <link rel="icon" href="favicon.png" />
 
     <!-- [SEO 리브랜딩] 기술 용어 제거, 사용자 검색 키워드 강화 -->
-    <base href="/ig-9cut/">
+    <!-- [SEO 리브랜딩] 기술 용어 제거, 사용자 검색 키워드 강화 -->
+    <script>
+      // 로컬 개발 환경(localhost)이 아닐 때만 base href 적용
+      if (
+        window.location.hostname !== "localhost" &&
+        window.location.hostname !== "127.0.0.1"
+      ) {
+        const base = document.createElement("base");
+        base.href = "/ig-9cut/";
+        document.head.insertBefore(base, document.head.firstChild);
+      }
+    </script>
     <title>
       인스타 바둑판 피드 메이커 - 9분할/6분할 사진 자르기 (Seungyong Cho)
     </title>
