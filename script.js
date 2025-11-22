@@ -70,7 +70,9 @@ document.addEventListener("DOMContentLoaded", () => {
     },
 
     init() {
-      if (this.helpers.checkAndEscapeKakaoInApp()) return;
+      // Shared Asset: TossUI Helper
+      if (window.TossUI && window.TossUI.checkAndEscapeKakaoInApp()) return;
+      
       this.ui.setAppHeight();
       window.addEventListener("resize", this.ui.setAppHeight);
       this.findDOMElements();
@@ -549,20 +551,7 @@ document.addEventListener("DOMContentLoaded", () => {
     },
 
     helpers: {
-      checkAndEscapeKakaoInApp() {
-        const userAgent = navigator.userAgent.toLowerCase();
-        if (!/kakaotalk/i.test(userAgent)) return false;
-        const currentUrl = window.location.href;
-        const isIOS = /iphone|ipad|ipod/i.test(userAgent);
-        window.location.href =
-          "kakaotalk://web/openExternal?url=" + encodeURIComponent(currentUrl);
-        setTimeout(() => {
-          window.location.href = isIOS
-            ? "kakaoweb://closeBrowser"
-            : "kakaotalk://inappbrowser/close";
-        }, 500);
-        return true;
-      },
+      // Helper functions moved to assets/toss-ui.js
     },
   };
 
