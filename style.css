@@ -201,6 +201,11 @@
 }
 
 /* --- Safari 하단 주소창 대응 --- */
+html,
+body {
+  overscroll-behavior: none;
+}
+
 .app-container {
   padding-bottom: env(safe-area-inset-bottom);
 }
