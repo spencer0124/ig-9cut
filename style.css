@@ -199,3 +199,14 @@
   line-height: 1;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
+
+/* --- Safari 하단 주소창 대응 --- */
+.app-container {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.card-footer,
+.card-footer-simple,
+.card-footer.button-group {
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+}
