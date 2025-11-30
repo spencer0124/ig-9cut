@@ -75,6 +75,14 @@ document.addEventListener("DOMContentLoaded", () => {
       
       this.ui.setAppHeight();
       window.addEventListener("resize", this.ui.setAppHeight);
+      
+      // (v8.1) iOS Rubber-band 방지: 스크롤 영역 외 터치 무시
+      document.body.addEventListener("touchmove", (e) => {
+        if (!e.target.closest(".card-content")) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+
       this.findDOMElements();
       this.bindEvents();
     },
