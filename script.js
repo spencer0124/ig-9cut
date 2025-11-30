@@ -76,9 +76,33 @@ document.addEventListener("DOMContentLoaded", () => {
       this.ui.setAppHeight();
       window.addEventListener("resize", this.ui.setAppHeight);
       
-      // (v8.1) iOS Rubber-band 방지: 스크롤 영역 외 터치 무시
+      // (v8.2) iOS Rubber-band 완전 차단: 터치 좌표 추적 및 경계 체크
+      let touchStartY = 0;
+      document.body.addEventListener("touchstart", (e) => {
+        touchStartY = e.touches[0].clientY;
+      }, { passive: false });
+
       document.body.addEventListener("touchmove", (e) => {
-        if (!e.target.closest(".card-content")) {
+        const scrollable = e.target.closest(".card-content");
+        
+        // 1. 스크롤 영역 밖이면 무조건 차단
+        if (!scrollable) {
+          e.preventDefault();
+          return;
+        }
+
+        const touchY = e.touches[0].clientY;
+        const touchDiff = touchY - touchStartY;
+        const isAtTop = scrollable.scrollTop <= 0;
+        const isAtBottom = scrollable.scrollTop + scrollable.clientHeight >= scrollable.scrollHeight;
+
+        // 2. 맨 위에서 아래로 당길 때 (새로고침 제스처) 차단
+        if (isAtTop && touchDiff > 0) {
+          e.preventDefault();
+        }
+        
+        // 3. 맨 아래에서 위로 당길 때 (바운스) 차단
+        if (isAtBottom && touchDiff < 0) {
           e.preventDefault();
         }
       }, { passive: false });
